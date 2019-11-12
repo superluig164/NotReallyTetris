@@ -1,0 +1,4 @@
+Immediate ideas come to mind:
+- a Mario clone (platformer style)
+- Tetris
+- Perhaps something 3D?  Maybe like Slope?
