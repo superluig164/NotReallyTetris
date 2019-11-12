@@ -1,8 +1,8 @@
 /* Written by Tommy Sebesyen
  * Purpose: This class handles the "real" x and y positions of 
- * objects on the playfield.  It uses blockSize, gameWidth, and
- * gameHeight to calculate the real playfield size based on the 
- * window size.
+ * objects on the playfield.  It also handles updating their 
+ * positions, clearing lines, initializing new shapes, etc.
+ * This is essentially the heart of this game.
  */
 
 class Field {
@@ -15,10 +15,10 @@ class Field {
   int moveDir; // Direction and distance to move a falling shape
   int linesCleared = 0; // How many lines have been cleared
 
-  float centerx; // Center constants
-  float centery; // Center constants
+  float centerx; // Center constant
+  float centery; // Center constant
 
-  // Various color constants
+  // Color constants
   final color purple = color(184, 2, 253);
   final color red = color(254, 16, 60);
   final color green = color(102, 253, 0);
@@ -35,6 +35,7 @@ class Field {
     println("ERROR: Something called an uninitialized Field.  This should not happen.");
   }
 
+  // Constructor
   // x - the desired playfield width, in blocks
   // y - the desired playfield height, in blocks
   // b - the desired block size, in pixels
@@ -55,6 +56,7 @@ class Field {
   // Initalize a new arrangement of blocks based on Tetris standards
   // t - the type of formation desired to be created
   void initializeShape(String t) {
+    // Cancel adding the shape if there is a block at the top of the field
     for (int i=blocks.size()-1; i>=0; i--) {
       if (blocks.get(i).bx==centerx && blocks.get(i).by==0) return;
     }
@@ -146,6 +148,7 @@ class Field {
       x = ((width/2)-(w/2))+(s+3)*x;
       y = ((height/2)-(h/2))+(s+3)*y;
 
+      // Draw the block
       fill(c);
       rect(x, y, s, s);
     }
@@ -160,8 +163,10 @@ class Field {
 
     // Iterate through the blocks in the field
     for (int i=blocks.size()-1; i>=0; i--) {
+      // Log
       print("Block #"+i+" ");
       print("x-"+blocks.get(i).bx+" y-"+blocks.get(i).by+" ");
+
       // Whether to stop the block
       boolean stop = false;
 
@@ -186,6 +191,8 @@ class Field {
               if (!blocks.get(j).fall) {
                 // Stop i from falling
                 stop=true;
+
+                // Log
                 print("below ");
                 break;
               }
@@ -199,20 +206,25 @@ class Field {
         // Push the block's position down
         if (!stop) blocks.get(i).by++;
       }
+      // Log
       println("");
     }
+    // Reset moveDir each update cycle
     moveDir = 0;
 
-    // Check for lines to be cleared
+    // If we should be clearing lines
     if (falling>0) 
+      // Clear lines
       clearingLine=true;
 
     // Logic for clearing lines --------------------
-    // If no blocks are falling
+    // If we should be clearing lines
     if (clearingLine) {
       // Iterate through each line
       for (int i=int(sizey); i>0; i--) {
+        // Log
         print("Line #"+i+" ");
+
         // How many blocks are on this line
         int howMany=0;
 
@@ -222,12 +234,15 @@ class Field {
           if (blocks.get(j).by==i) howMany++;
         }
         print(howMany+" ");
-        // If there are more blocks on this line than the width of the field, clear this line
+        // If there are more blocks on this line than the width of the field
         if (howMany>sizex) {
+          // Clear the line
           removeLine(i);
+
+          // Log
           print("removed #"+i+" ");
         }
-        //else if (falling==0) clearingLine = false;
+        // Log
         println("");
       }
     }
@@ -236,8 +251,11 @@ class Field {
   }
 
   // Remove a line of blocks from the field and update the blocks above to fall.
+  // line - which line to remove
   void removeLine(float line) {
+    // Update the score
     linesCleared++;
+
     // Iterate through all lines before the one to be removed
     for (int i=0; i<line; i++) {
       print("Line #"+i+" ");
@@ -245,19 +263,26 @@ class Field {
       for (int j=blocks.size()-1; j>=0; j--) {
         // If the block is at the current line
         if (blocks.get(j).by==i) {
+          // Whether there is a block underneath
           int under=0;
+
           // Iterate through the blocks on the field
           for (int k=blocks.size()-1; k>=0; k--) {
+            // Reset this variable
             under=0;
             // If there is a block under this one
             if (blocks.get(j).bx==blocks.get(k).bx &&
+              // Count it towards under
               blocks.get(j).by==blocks.get(k).by-1) under++;
           }
           // If there are no blocks under this one, drop it
           if (under<=0) blocks.get(j).fall=true;
+
+          // Log
           print("drop #"+j+" ");
         }
       }
+      // Log
       println("");
     }
 
@@ -270,17 +295,21 @@ class Field {
 
   // Select a random shape out of the available shapes.
   String calculateNextShape() {
+    // The shape to be chosen
     float chosenShape=0;
+
     // If there are no shapes left in the array, re-initialize it
     if (shapes.size()<=0) {
+      // Iterate through 7 shapes
       for (int i=1; i<=7; i++) {
+        // Add that shape ID
         shapes.add(i);
       }
     }
     // Choose a random index in the array
     chosenShape = random(float(shapes.size()-1));
 
-    // What to return based on the shape chosen
+    // What shape to return based on the shape chosen
     switch(shapes.get(int(chosenShape))) {
     case 1:
       return "t";
@@ -306,7 +335,7 @@ class Field {
   void moveShape(int dir) {
     // Amount of blocks that are falling
     int falling=0;
-    
+
     // Iterate through the blocks in the field
     for (int i=blocks.size()-1; i>=0; i--) {
 
@@ -314,7 +343,7 @@ class Field {
       if (blocks.get(i).fall) falling++;
     }
 
-    // If there are 4 blocks falling (i.e a shape)
+    // If there are 4 blocks falling (i.e. a shape)
     if (falling==4) {
       // Iterate through the blocks in the field
       for (int i=blocks.size()-1; i>=0; i--) {
@@ -333,6 +362,8 @@ class Field {
       }
       // Move the falling blocks on the field
       moveDir+=dir;
+      
+      // Iterate through the blocks on the field
       for (int i=blocks.size()-1; i>=0; i--) {
         // If the block should move horizontally, move it
         if (moveDir!=0 && blocks.get(i).fall) blocks.get(i).bx+=moveDir;

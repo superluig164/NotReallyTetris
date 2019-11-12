@@ -5,8 +5,8 @@
 
 class Block {
 
-  float bx; // x location BLOCK-WISE (in the field)
-  float by; // y location BLOCK-WISE (in the field)
+  float bx; // x location in the field
+  float by; // y location in the field
   color col; // Block's color
   boolean fall; // Whether the block is falling or not
 
@@ -19,6 +19,7 @@ class Block {
     println("ERROR: Something called an uninitialized Block.  This should not happen.");
   }
 
+  // Constructor
   // c - the colour of the block
   // x - the position of the block horizontally
   // y - the position of the block vertically
@@ -38,6 +39,7 @@ class Block {
   }
 
   // Add or subtract from the current colour towards the goal colour.
+  // I never use this method.  Go figure.
   // goal - the colour to move toward
   color transformColour(color goal) {
     
